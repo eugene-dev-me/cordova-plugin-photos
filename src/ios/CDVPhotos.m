@@ -80,10 +80,30 @@ NSString* const E_PHOTO_BUSY = @"Fetching of photo assets is in progress";
 
     _extType = @{@"JPG": @"image/jpeg",
                  @"JPEG": @"image/jpeg",
+                 @"HEIC": @"image/heic",
+                 @"HEIF": @"image/heif",
                  @"PNG": @"image/png",
                  @"GIF": @"image/gif",
                  @"TIF": @"image/tiff",
-                 @"TIFF": @"image/tiff"};
+                 @"TIFF": @"image/tiff",
+                 @"M3U": @"application/vnd.apple.mpegurl",
+                 @"M3U8": @"application/vnd.apple.mpegurl",
+                 @"3GP": @"video/3gpp",
+                 @"MP4": @"video/mp4",
+                 @"MP4A": @"video/mp4",
+                 @"M4P": @"video/mp4",
+                 @"M4B": @"video/mp4",
+                 @"M4R": @"video/mp4",
+                 @"M4V": @"video/mp4",
+                 @"M1V": @"video/mpeg",
+                 @"OGG": @"video/ogg",
+                 @"MOV": @"video/quicktime",
+                 @"QT": @"video/quicktime",
+                 @"WEBM": @"video/webm",
+                 @"ASF": @"video/ms-asf",
+                 @"WMA": @"video/ms-asf",
+                 @"WMV": @"video/ms-asf",
+                 @"AVI": @"video/x-msvideo"};
 
     _extRegex = [NSRegularExpression
                  regularExpressionWithPattern:T_EXT_PATTERN
@@ -174,8 +194,8 @@ NSString* const E_PHOTO_BUSY = @"Fetching of photo assets is in progress";
              fetchOptions.sortDescriptors = @[[NSSortDescriptor
                                                sortDescriptorWithKey:@"creationDate"
                                                ascending:NO]];
-             fetchOptions.predicate
-             = [NSPredicate predicateWithFormat:@"mediaType = %d", PHAssetMediaTypeImage];
+//             fetchOptions.predicate
+//             = [NSPredicate predicateWithFormat:@"mediaType = %d", PHAssetMediaTypeImage];
 
              PHFetchResult<PHAsset*>* fetchResultAssets =
              [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
