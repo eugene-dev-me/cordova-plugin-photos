@@ -31,6 +31,7 @@
 - (void) collections:(CDVInvokedUrlCommand*)command;
 - (void) photos:(CDVInvokedUrlCommand*)command;
 - (void) thumbnail:(CDVInvokedUrlCommand*)command;
+- (void) videothumbnail:(CDVInvokedUrlCommand*)command;
 - (void) image:(CDVInvokedUrlCommand*)command;
 - (void) cancel:(CDVInvokedUrlCommand*)command;
 

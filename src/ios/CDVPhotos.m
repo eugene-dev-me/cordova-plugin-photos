@@ -74,6 +74,9 @@ NSString* const E_PHOTO_ID_WRONG = @"Photo with specified ID wasn't found";
 NSString* const E_PHOTO_NOT_IMAGE = @"Data with specified ID isn't an image";
 NSString* const E_PHOTO_BUSY = @"Fetching of photo assets is in progress";
 
+NSString* const E_PHOTO_POSITION = @"Error position";
+NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
+
 - (void) pluginInitialize {
     _dateFormat = [[NSDateFormatter alloc] init];
     [_dateFormat setDateFormat:T_DATE_FORMAT];
@@ -310,6 +313,107 @@ NSString* const E_PHOTO_BUSY = @"Fetching of photo assets is in progress";
     }];
 }
 
+- (void) videothumbnail:(CDVInvokedUrlCommand*)command {
+    CDVPhotos* __weak weakSelf = self;
+    [self checkPermissionsOf:command andRun:^{
+        PHAsset* asset = [weakSelf assetByCommand:command];
+        if (asset == nil) return;
+
+        NSDictionary* options = [weakSelf argOf:command atIndex:1 withDefault:@{}];
+
+        NSInteger size = [options[P_SIZE] integerValue];
+        if (size <= 0) size = DEF_SIZE;
+        NSInteger quality = [options[P_QUALITY] integerValue];
+        if (quality <= 0) quality = DEF_QUALITY;
+
+        PHVideoRequestOptions* reqOptions = [[PHVideoRequestOptions alloc] init];
+//        reqOptions.resizeMode = PHImageRequestOptionsResizeModeExact;
+        reqOptions.networkAccessAllowed = YES;
+//        reqOptions.synchronous = YES;
+
+        [[PHImageManager defaultManager]
+         requestAVAssetForVideo:asset
+//         targetSize:CGSizeMake(size, size)
+//         contentMode:PHImageContentModeDefault
+         options:reqOptions
+         resultHandler:^(AVAsset * avasset, AVAudioMix * audioMix, NSDictionary * info) {
+            NSError* error = info[PHImageErrorKey];
+            if (![weakSelf isNull:error]) {
+                [weakSelf failure:command withMessage:error.localizedDescription];
+                return;
+            }
+            if ([weakSelf isNull:avasset]) {
+                [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
+                return;
+            }
+
+            AVAssetImageGenerator *generate = [AVAssetImageGenerator assetImageGeneratorWithAsset:avasset];
+            generate.appliesPreferredTrackTransform = YES;
+
+            Float64 position = [[options objectForKey:@"position"] floatValue];
+            CMTime time = CMTimeMakeWithSeconds(position, 1000);
+            CGImageRef imgRef = [generate copyCGImageAtTime:time actualTime:NULL error:&error];
+            if (error) {
+                [weakSelf failure:command withMessage:E_PHOTO_POSITION];
+                return;
+            }
+
+            UIImage *thumbnail = [[UIImage alloc] initWithCGImage:imgRef];
+            CGImageRelease(imgRef);
+
+            Float64 newWidth = size;
+            Float64 newHeight = size;
+            CGRect targetFrame = CGRectMake(0, 0, newWidth, newHeight);
+            CGRect targetFrameWithAspectRatio = AVMakeRectWithAspectRatioInsideRect(thumbnail.size, targetFrame);
+
+            UIGraphicsBeginImageContextWithOptions(targetFrameWithAspectRatio.size, true, 0.0);
+
+            [thumbnail drawInRect:CGRectMake(0.0, 0.0,
+            targetFrameWithAspectRatio.size.width,
+            targetFrameWithAspectRatio.size.height)];
+
+            thumbnail = UIGraphicsGetImageFromCurrentImageContext();
+
+            if (!thumbnail) {
+                [weakSelf failure:command withMessage:E_PHOTO_NOVIDEOTHUMB];
+                return;
+            }
+
+            NSData *imageData = UIImageJPEGRepresentation(thumbnail, quality / 100);
+
+            [weakSelf success:command withData:imageData];
+
+        }];
+
+//         resultHandler:^(UIImage* _Nullable result, NSDictionary* _Nullable info) {
+//             NSError* error = info[PHImageErrorKey];
+//             if (![weakSelf isNull:error]) {
+//                 [weakSelf failure:command withMessage:error.localizedDescription];
+//                 return;
+//             }
+//             if ([weakSelf isNull:result]) {
+//                 [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
+//                 return;
+//             }
+//             UIGraphicsBeginImageContext(result.size);
+//             [result drawInRect:CGRectMake(0, 0, result.size.width, result.size.height)];
+//             UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+//             UIGraphicsEndImageContext();
+//             NSData* data = UIImageJPEGRepresentation(image, (CGFloat) quality / 100);
+//             if ([weakSelf isNull:data]) {
+//                 [weakSelf failure:command withMessage:E_PHOTO_THUMB];
+//                 return;
+//             }
+//             if (asDataUrl) {
+//                 NSString* dataUrl = [NSString stringWithFormat:T_DATA_URL,
+//                                      [data base64EncodedStringWithOptions:0]];
+//                 [weakSelf success:command withMessage:dataUrl];
+//             } else [weakSelf success:command withData:data];
+//         }];
+    }];
+
+}
+
 - (void) image:(CDVInvokedUrlCommand*)command {
     CDVPhotos* __weak weakSelf = self;
     [self checkPermissionsOf:command andRun:^{
@@ -403,7 +507,7 @@ NSString* const E_PHOTO_BUSY = @"Fetching of photo assets is in progress";
         return nil;
     }
     PHAsset* asset = fetchResultAssets.firstObject;
-    if (asset.mediaType != PHAssetMediaTypeImage) {
+    if (asset.mediaType != PHAssetMediaTypeImage && asset.mediaType != PHAssetMediaTypeVideo) {
         [self failure:command withMessage:E_PHOTO_NOT_IMAGE];
         return nil;
     }

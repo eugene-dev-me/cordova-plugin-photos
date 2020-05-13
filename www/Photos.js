@@ -45,9 +45,9 @@ var Photos = {
 			case "string":
 				collectionIds = [collectionIds];
 				if (typeof options == "function") {
-						errorCallback = successCallback;
-						successCallback = options;
-						options = null;
+					errorCallback = successCallback;
+					successCallback = options;
+					options = null;
 				}
 				break;
 			case "object":
@@ -69,6 +69,15 @@ var Photos = {
 			options = null;
 		}
 		exec(successCallback, errorCallback, "Photos", "thumbnail", [photoId, options]);
+	},
+
+	videothumbnail: function (photoId, options, successCallback, errorCallback) {
+		if (typeof options === "function") {
+			errorCallback = successCallback;
+			successCallback = options;
+			options = null;
+		}
+		exec(successCallback, errorCallback, "Photos", "videothumbnail", [photoId, options]);
 	},
 
 	image: function (photoId, successCallback, errorCallback) {
