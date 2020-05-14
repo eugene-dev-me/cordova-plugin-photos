@@ -71,13 +71,22 @@ var Photos = {
 		exec(successCallback, errorCallback, "Photos", "thumbnail", [photoId, options]);
 	},
 
-	videothumbnail: function (photoId, options, successCallback, errorCallback) {
+	videothumbnail: function (videoId, options, successCallback, errorCallback) {
 		if (typeof options === "function") {
 			errorCallback = successCallback;
 			successCallback = options;
 			options = null;
 		}
-		exec(successCallback, errorCallback, "Photos", "videothumbnail", [photoId, options]);
+		exec(successCallback, errorCallback, "Photos", "videothumbnail", [videoId, options]);
+	},
+
+	videourl: function (videoId, options, successCallback, errorCallback) {
+		if (typeof options === "function") {
+			errorCallback = successCallback;
+			successCallback = options;
+			options = null;
+		}
+		exec(successCallback, errorCallback, "Photos", "videourl", [videoId, options]);
 	},
 
 	image: function (photoId, successCallback, errorCallback) {

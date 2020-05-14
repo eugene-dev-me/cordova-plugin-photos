@@ -327,14 +327,10 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
         if (quality <= 0) quality = DEF_QUALITY;
 
         PHVideoRequestOptions* reqOptions = [[PHVideoRequestOptions alloc] init];
-//        reqOptions.resizeMode = PHImageRequestOptionsResizeModeExact;
         reqOptions.networkAccessAllowed = YES;
-//        reqOptions.synchronous = YES;
 
         [[PHImageManager defaultManager]
          requestAVAssetForVideo:asset
-//         targetSize:CGSizeMake(size, size)
-//         contentMode:PHImageContentModeDefault
          options:reqOptions
          resultHandler:^(AVAsset * avasset, AVAudioMix * audioMix, NSDictionary * info) {
             NSError* error = info[PHImageErrorKey];
@@ -385,31 +381,39 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
 
         }];
 
-//         resultHandler:^(UIImage* _Nullable result, NSDictionary* _Nullable info) {
-//             NSError* error = info[PHImageErrorKey];
-//             if (![weakSelf isNull:error]) {
-//                 [weakSelf failure:command withMessage:error.localizedDescription];
-//                 return;
-//             }
-//             if ([weakSelf isNull:result]) {
-//                 [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
-//                 return;
-//             }
-//             UIGraphicsBeginImageContext(result.size);
-//             [result drawInRect:CGRectMake(0, 0, result.size.width, result.size.height)];
-//             UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
-//             UIGraphicsEndImageContext();
-//             NSData* data = UIImageJPEGRepresentation(image, (CGFloat) quality / 100);
-//             if ([weakSelf isNull:data]) {
-//                 [weakSelf failure:command withMessage:E_PHOTO_THUMB];
-//                 return;
-//             }
-//             if (asDataUrl) {
-//                 NSString* dataUrl = [NSString stringWithFormat:T_DATA_URL,
-//                                      [data base64EncodedStringWithOptions:0]];
-//                 [weakSelf success:command withMessage:dataUrl];
-//             } else [weakSelf success:command withData:data];
-//         }];
+    }];
+
+}
+
+- (void) videourl:(CDVInvokedUrlCommand*)command {
+    CDVPhotos* __weak weakSelf = self;
+    [self checkPermissionsOf:command andRun:^{
+        PHAsset* asset = [weakSelf assetByCommand:command];
+        if (asset == nil) return;
+
+        NSDictionary* options = [weakSelf argOf:command atIndex:1 withDefault:@{}];
+
+        PHVideoRequestOptions* reqOptions = [[PHVideoRequestOptions alloc] init];
+        reqOptions.networkAccessAllowed = YES;
+
+        [[PHImageManager defaultManager]
+         requestAVAssetForVideo:asset
+         options:reqOptions
+         resultHandler:^(AVAsset * avasset, AVAudioMix * audioMix, NSDictionary * info) {
+            NSError* error = info[PHImageErrorKey];
+            if (![weakSelf isNull:error]) {
+                [weakSelf failure:command withMessage:error.localizedDescription];
+                return;
+            }
+            if ([weakSelf isNull:avasset]) {
+                [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
+                return;
+            }
+
+            [weakSelf success:command withMessage:avasset.description];
+
+        }];
+
     }];
 
 }
