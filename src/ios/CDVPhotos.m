@@ -313,6 +313,21 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
     }];
 }
 
+- (void) photourl:(CDVInvokedUrlCommand*)command {
+    CDVPhotos* __weak weakSelf = self;
+    [self checkPermissionsOf:command andRun:^{
+        PHAsset* asset = [weakSelf assetByCommand:command];
+        if (asset == nil) return;
+
+        [asset requestContentEditingInputWithOptions:[PHContentEditingInputRequestOptions new] completionHandler:^(PHContentEditingInput *contentEditingInput, NSDictionary *info) {
+            NSURL *imageURL = contentEditingInput.fullSizeImageURL;
+            NSString *filePath = imageURL.absoluteString;
+            [weakSelf success:command withMessage:filePath];
+        }];
+    }];
+
+}
+
 - (void) videothumbnail:(CDVInvokedUrlCommand*)command {
     CDVPhotos* __weak weakSelf = self;
     [self checkPermissionsOf:command andRun:^{
@@ -384,6 +399,7 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
     }];
 
 }
+
 
 - (void) videourl:(CDVInvokedUrlCommand*)command {
     CDVPhotos* __weak weakSelf = self;
