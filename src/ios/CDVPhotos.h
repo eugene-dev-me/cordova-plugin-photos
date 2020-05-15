@@ -32,7 +32,9 @@
 - (void) photos:(CDVInvokedUrlCommand*)command;
 - (void) thumbnail:(CDVInvokedUrlCommand*)command;
 - (void) videothumbnail:(CDVInvokedUrlCommand*)command;
+- (void) photourl:(CDVInvokedUrlCommand*)command;
 - (void) videourl:(CDVInvokedUrlCommand*)command;
+- (void) getDuration:(CDVInvokedUrlCommand*)command;
 - (void) image:(CDVInvokedUrlCommand*)command;
 - (void) cancel:(CDVInvokedUrlCommand*)command;
 

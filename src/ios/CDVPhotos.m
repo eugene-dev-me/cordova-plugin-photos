@@ -434,6 +434,40 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
 
 }
 
+- (void) getDuration:(CDVInvokedUrlCommand*)command {
+    CDVPhotos* __weak weakSelf = self;
+    [self checkPermissionsOf:command andRun:^{
+        PHAsset* asset = [weakSelf assetByCommand:command];
+        if (asset == nil) return;
+
+        PHVideoRequestOptions* reqOptions = [[PHVideoRequestOptions alloc] init];
+        reqOptions.networkAccessAllowed = YES;
+
+        [[PHImageManager defaultManager]
+         requestAVAssetForVideo:asset
+         options:reqOptions
+         resultHandler:^(AVAsset * avasset, AVAudioMix * audioMix, NSDictionary * info) {
+            NSError* error = info[PHImageErrorKey];
+            if (![weakSelf isNull:error]) {
+                [weakSelf failure:command withMessage:error.localizedDescription];
+                return;
+            }
+            if ([weakSelf isNull:avasset]) {
+                [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
+                return;
+            }
+
+            float duration = CMTimeGetSeconds(avasset.duration);
+            NSString *durationS = [NSString stringWithFormat:@"%f", duration];
+
+            [weakSelf success:command withMessage:durationS];
+
+        }];
+
+    }];
+
+}
+
 - (void) image:(CDVInvokedUrlCommand*)command {
     CDVPhotos* __weak weakSelf = self;
     [self checkPermissionsOf:command andRun:^{

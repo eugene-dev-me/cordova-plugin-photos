@@ -100,6 +100,15 @@ cordova.define("cordova-plugin-photos.Photos", function(require, exports, module
 			exec(successCallback, errorCallback, "Photos", "videourl", [videoId, options]);
 		},
 
+		getDuration: function (videoId, options, successCallback, errorCallback) {
+			if (typeof options === "function") {
+				errorCallback = successCallback;
+				successCallback = options;
+				options = null;
+			}
+			exec(successCallback, errorCallback, "Photos", "getDuration", [videoId, options]);
+		},
+
 		image: function (photoId, successCallback, errorCallback) {
 			exec(successCallback, errorCallback, "Photos", "image", [photoId]);
 		},
