@@ -58,7 +58,7 @@ NSString* const P_LIST_LIMIT = @"limit";
 NSString* const P_LIST_INTERVAL = @"interval";
 
 NSString* const T_DATA_URL = @"data:image/jpeg;base64,%@";
-NSString* const T_DATE_FORMAT = @"YYYY-MM-dd\'T\'HH:mm:ssZZZZZ";
+NSString* const T_DATE_FORMAT = @"yyyy-MM-dd HH:mm:ss zzz";
 NSString* const T_EXT_PATTERN = @"^(.+)\\.([a-z]{3,4})$";
 
 NSInteger const DEF_SIZE = 120;
