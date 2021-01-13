@@ -42,6 +42,8 @@ NSString* const P_LON = @"longitude";
 NSString* const P_DATE = @"date";
 NSString* const P_TS = @"timestamp";
 NSString* const P_TYPE = @"contentType";
+NSString* const P_DIRECTORY = @"directory";
+
 
 NSString* const P_SIZE = @"dimension";
 NSString* const P_QUALITY = @"quality";
@@ -159,7 +161,7 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
     CDVPhotos* __weak weakSelf = self;
     [self checkPermissionsOf:command andRun:^{
         NSArray* collectionIds = [weakSelf argOf:command atIndex:0 withDefault:nil];
-        NSLog(@"photos: collectionIds=%@", collectionIds);
+//         NSLog(@"photos: collectionIds=%@", collectionIds);
 
         NSDictionary* options = [weakSelf argOf:command atIndex:1 withDefault:@{}];
         int offset = [[weakSelf valueFrom:options
@@ -210,6 +212,9 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
                       return;
                   }
                   NSString* filename = [weakSelf getFilenameForAsset:asset];
+
+                  NSString* directory = [asset valueForKey:@"directory"];
+
                   if (![weakSelf isNull:filename]) {
                       NSTextCheckingResult* match
                       = [weakSelf.extRegex
@@ -226,6 +231,7 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
                                   = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                      asset.localIdentifier, P_ID,
                                      name, P_NAME,
+                                     directory, P_DIRECTORY,
                                      type, P_TYPE,
                                      [weakSelf.dateFormat stringFromDate:asset.creationDate], P_DATE,
                                      @((long) (asset.creationDate.timeIntervalSince1970 * 1000)), P_TS,
