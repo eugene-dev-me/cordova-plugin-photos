@@ -286,36 +286,49 @@ NSString* const E_PHOTO_NOVIDEOTHUMB = @"Error no video thumb";
         reqOptions.networkAccessAllowed = YES;
         reqOptions.synchronous = YES;
 
-        [[PHImageManager defaultManager]
-         requestImageForAsset:asset
-         targetSize:CGSizeMake(size, size)
-         contentMode:PHImageContentModeDefault
-         options:reqOptions
-         resultHandler:^(UIImage* _Nullable result, NSDictionary* _Nullable info) {
-             NSError* error = info[PHImageErrorKey];
-             if (![weakSelf isNull:error]) {
-                 [weakSelf failure:command withMessage:error.localizedDescription];
-                 return;
-             }
-             if ([weakSelf isNull:result]) {
-                 [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
-                 return;
-             }
-             UIGraphicsBeginImageContext(result.size);
-             [result drawInRect:CGRectMake(0, 0, result.size.width, result.size.height)];
-             UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
-             UIGraphicsEndImageContext();
-             NSData* data = UIImageJPEGRepresentation(image, (CGFloat) quality / 100);
-             if ([weakSelf isNull:data]) {
-                 [weakSelf failure:command withMessage:E_PHOTO_THUMB];
-                 return;
-             }
-             if (asDataUrl) {
-                 NSString* dataUrl = [NSString stringWithFormat:T_DATA_URL,
-                                      [data base64EncodedStringWithOptions:0]];
-                 [weakSelf success:command withMessage:dataUrl];
-             } else [weakSelf success:command withData:data];
-         }];
+        @autoreleasepool {
+            [[PHImageManager defaultManager]
+             requestImageForAsset:asset
+             targetSize:CGSizeMake(size, size)
+             contentMode:PHImageContentModeDefault
+             options:reqOptions
+             resultHandler:^(UIImage* _Nullable result, NSDictionary* _Nullable info) {
+                @autoreleasepool {
+                    NSError* error = info[PHImageErrorKey];
+                    if (![weakSelf isNull:error]) {
+                        [weakSelf failure:command withMessage:error.localizedDescription];
+                        return;
+                    }
+                    if ([weakSelf isNull:result]) {
+                        [weakSelf failure:command withMessage:E_PHOTO_NO_DATA];
+                        return;
+                    }
+                    UIGraphicsBeginImageContext(result.size);
+                    [result drawInRect:CGRectMake(0, 0, result.size.width, result.size.height)];
+                    UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                    NSData* data = UIImageJPEGRepresentation(image, (CGFloat) quality / 100);
+
+                    image = nil;
+
+                    if ([weakSelf isNull:data]) {
+                        [weakSelf failure:command withMessage:E_PHOTO_THUMB];
+                        return;
+                    }
+
+                    if (asDataUrl) {
+                        NSString* dataUrl = [NSString stringWithFormat:T_DATA_URL,
+                                             [data base64EncodedStringWithOptions:0]];
+                        [weakSelf success:command withMessage:dataUrl];
+                    } else {
+                        [weakSelf success:command withData:data];
+                    };
+
+                    data = nil;
+                    result = nil;
+                }
+             }];
+        }
     }];
 }
 
